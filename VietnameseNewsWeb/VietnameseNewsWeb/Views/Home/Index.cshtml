@@ -1,0 +1,542 @@
+@model ClassificationRequest
+@{
+    ViewData["Title"] = "Phân loại tin tức";
+}
+
+<div class="gradient-bg text-white py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-brain me-3"></i>
+                    Phân loại tin tức tiếng Việt
+                </h1>
+                <p class="lead mb-4">
+                    Sử dụng thuật toán Naïve Bayes để tự động phân loại bài báo thành các danh mục: 
+                    Kinh doanh, Thể thao, Giải trí, Công nghệ, Sức khỏe, Giáo dục, Chính trị
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg card-hover">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Nhập nội dung bài báo
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Classify" method="post">
+                        <div class="mb-4">
+                            <label asp-for="NewsText" class="form-label fw-bold">
+                                <i class="fas fa-newspaper me-1"></i>
+                                Nội dung bài báo:
+                            </label>
+                            <textarea asp-for="NewsText" 
+                                     class="form-control" 
+                                     rows="10" 
+                                     placeholder="Dán hoặc nhập nội dung bài báo cần phân loại vào đây...&#10;&#10;Ví dụ: &#10;- Bài về công nghệ: 'Công ty Apple vừa ra mắt iPhone mới với công nghệ AI tiên tiến...'&#10;- Bài về thể thao: 'Đội tuyển Việt Nam vừa giành chiến thắng 2-1 trước Thái Lan...'&#10;- Bài về kinh doanh: 'Chứng khoán Việt Nam tăng mạnh khi các nhà đầu tư nước ngoài...'"></textarea>
+                            <span asp-validation-for="NewsText" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic me-2"></i>
+                                Phân loại bài báo
+                            </button>
+                        </div>
+                        
+                        <!-- Chỉ sử dụng Naive Bayes thuần túy -->
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-outline-success" id="analyzeNaiveBayesBtn">
+                                        <i class="fas fa-brain me-2"></i>
+                                        Xem chi tiết quá trình Naive Bayes
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-outline-secondary" id="showModelInfoBtn">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Thông tin Model
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Công thức Naive Bayes - Hiển thị ngay trên trang chính -->
+            <div class="card mt-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Công thức Toán học Naive Bayes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">
+                                <i class="fas fa-formula me-1"></i>
+                                Công thức tổng quát:
+                            </h6>
+                            <div class="bg-light p-3 mb-3 rounded border" style="font-family: 'Courier New', monospace;">
+                                <div class="text-center">
+                                    <strong style="font-size: 1.1em;">P(C|X) = P(C) × ∏ P(X<sub>i</sub>|C)</strong>
+                                </div>
+                                <hr class="my-2">
+                                <small class="text-muted">
+                                    • <strong>P(C|X)</strong>: Xác suất lớp C cho văn bản X<br>
+                                    • <strong>P(C)</strong>: Xác suất tiên nghiệm của lớp C<br>
+                                    • <strong>P(X<sub>i</sub>|C)</strong>: Likelihood của đặc trưng X<sub>i</sub> với lớp C
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-success">
+                                <i class="fas fa-chart-line me-1"></i>
+                                Dạng Log (thực tế sử dụng):
+                            </h6>
+                            <div class="bg-light p-3 mb-3 rounded border" style="font-family: 'Courier New', monospace;">
+                                <div class="text-center">
+                                    <strong style="font-size: 1.1em;">log P(C|X) = log P(C) + Σ log P(X<sub>i</sub>|C)</strong>
+                                </div>
+                                <hr class="my-2">
+                                <small class="text-muted">
+                                    <strong>Với Gaussian Distribution:</strong><br>
+                                    • P(X<sub>i</sub>|C) = (1/√(2πσ²)) × e<sup>-(X<sub>i</sub>-μ)²/(2σ²)</sup><br>
+                                    • μ, σ²: mean và variance từ training data
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <small>
+                                    <i class="fas fa-lightbulb me-1 text-warning"></i>
+                                    <strong>Cách hoạt động:</strong> Hệ thống tính log probability cho từng lớp (Kinh doanh, Thể thao, Giải trí, etc.) 
+                                    rồi chọn lớp có giá trị cao nhất làm kết quả. Click <strong>"Xem chi tiết quá trình Naive Bayes"</strong> để xem từng bước tính toán!
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge bg-primary p-2">
+                                    <i class="fas fa-brain me-1"></i>
+                                    AI Classification
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hướng dẫn sử dụng -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Hướng dẫn sử dụng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">
+                                <i class="fas fa-list me-1"></i>
+                                Các danh mục phân loại:
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-primary me-2">Kinh doanh</span> Tài chính, đầu tư, thương mại</li>
+                                <li><span class="badge bg-success me-2">Thể thao</span> Bóng đá, tennis, Olympic</li>
+                                <li><span class="badge bg-warning me-2">Giải trí</span> Phim ảnh, âm nhạc, sao</li>
+                                <li><span class="badge bg-info me-2">Công nghệ</span> AI, blockchain, ứng dụng</li>
+                                <li><span class="badge bg-danger me-2">Sức khỏe</span> Y tế, bệnh tật, thuốc</li>
+                                <li><span class="badge bg-secondary me-2">Giáo dục</span> Trường học, đào tạo</li>
+                                <li><span class="badge bg-dark me-2">Chính trị</span> Chính phủ, luật pháp</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Tips để có kết quả tốt:
+                            </h6>
+                            <ul class="small">
+                                <li>Nhập ít nhất 50-100 từ</li>
+                                <li>Bao gồm tiêu đề và nội dung chính</li>
+                                <li>Tránh nội dung quá ngắn hoặc chỉ có tiêu đề</li>
+                                <li>Nội dung càng chi tiết, kết quả càng chính xác</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-resize textarea
+        document.getElementById('NewsText').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Character counter
+        const textarea = document.querySelector('textarea[name="NewsText"]');
+        const counter = document.createElement('small');
+        counter.className = 'text-muted mt-1 d-block';
+        textarea.parentNode.appendChild(counter);
+
+        function updateCounter() {
+            const length = textarea.value.length;
+            counter.textContent = `${length} ký tự`;
+            
+            if (length < 10) {
+                counter.className = 'text-danger mt-1 d-block';
+            } else if (length < 50) {
+                counter.className = 'text-warning mt-1 d-block';
+            } else {
+                counter.className = 'text-success mt-1 d-block';
+            }
+        }
+
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+
+        // Xử lý phân tích Naive Bayes
+        document.getElementById('analyzeNaiveBayesBtn').addEventListener('click', function() {
+            const newsText = document.querySelector('textarea[name="NewsText"]').value;
+            
+            if (!newsText.trim()) {
+                alert('Vui lòng nhập nội dung bài báo trước khi phân tích!');
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang phân tích...';
+
+            fetch('/Home/GetDetailedNaiveBayesAnalysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    text: newsText,
+                    maxFeaturesToShow: 10,
+                    showAllFeatures: false
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('API Response:', data);
+                if (data.success && data.data) {
+                    // Hiển thị kết quả chi tiết trên trang web
+                    showDetailedAnalysis(data.data);
+                } else {
+                    alert('❌ ' + (data.message || 'Không thể thực hiện phân tích chi tiết'));
+                }
+            })
+            .catch(error => {
+                console.error('Detailed Error:', error);
+                alert('❌ Có lỗi xảy ra khi phân tích Naive Bayes: ' + error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+
+        // Hiển thị kết quả phân tích chi tiết
+        function showDetailedAnalysis(analysisData) {
+            // Tạo và hiển thị modal với thông tin chi tiết
+            const modal = createAnalysisModal(analysisData);
+            document.body.appendChild(modal);
+            
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+            
+            // Xóa modal khi đóng
+            modal.addEventListener('hidden.bs.modal', function () {
+                document.body.removeChild(modal);
+            });
+            
+            // Hiển thị thông báo thành công
+            setTimeout(() => {
+                alert('🧠 Phân tích Naive Bayes chi tiết đã hoàn thành!\n\n' +
+                      '📊 Kết quả bao gồm:\n' +
+                      '- Thông tin model và xác suất tiên nghiệm\n' +
+                      '- Quá trình tính toán từng bước\n' +
+                      '- Công thức Gaussian cho từng đặc trưng\n' +
+                      '- Log probabilities và ranking\n\n' +
+                      '👁️ Modal hiển thị kết quả chi tiết đã được mở!');
+            }, 500);
+        }
+
+        // Tạo modal cho kết quả phân tích
+        function createAnalysisModal(data) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'naiveBayesModal';
+            modal.tabIndex = -1;
+            
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h4 class="modal-title">
+                                <i class="fas fa-brain me-2"></i>
+                                Phân tích chi tiết Naive Bayes
+                            </h4>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${generateModalContent(data)}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary" onclick="printAnalysis()">In kết quả</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return modal;
+        }
+
+        // Tạo nội dung modal
+        function generateModalContent(data) {
+            const nonZeroFeaturesHtml = data.nonZeroFeatures.slice(0, 10)
+                .map(f => `<li><code>${f.name}</code>: ${f.value.toFixed(1)}</li>`)
+                .join('');
+                
+            const classAnalysesHtml = data.classAnalyses
+                .sort((a, b) => b.finalLogProbability - a.finalLogProbability)
+                .map(classAnalysis => `
+                    <div class="card mb-3 ${classAnalysis.isPredicted ? 'border-success' : ''}">
+                        <div class="card-header ${classAnalysis.isPredicted ? 'bg-success text-white' : 'bg-light'}">
+                            <h6 class="mb-0">
+                                ${classAnalysis.isPredicted ? '🏆 ' : ''}
+                                ${classAnalysis.className.toUpperCase()} 
+                                <span class="badge ${classAnalysis.isPredicted ? 'bg-light text-success' : 'bg-secondary'} ms-2">
+                                    #${classAnalysis.rank}
+                                </span>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <!-- Công thức tính chi tiết -->
+                            <div class="alert alert-info mb-3">
+                                <h6 class="mb-2"><i class="fas fa-formula me-2"></i>Công thức tính cho lớp ${classAnalysis.className}:</h6>
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.9em;">
+                                    <strong>log P(${classAnalysis.className}|X) = log P(${classAnalysis.className}) + Σ log P(Xi|${classAnalysis.className})</strong><br>
+                                    <span class="text-muted">= ${classAnalysis.logPriorProbability.toFixed(6)} + (${classAnalysis.totalLogLikelihood.toFixed(6)})</span><br>
+                                    <span class="text-success"><strong>= ${classAnalysis.finalLogProbability.toFixed(6)}</strong></span>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>1. Xác suất tiên nghiệm:</strong><br>
+                                    <small>P(${classAnalysis.className}) = ${classAnalysis.priorProbability.toFixed(6)}</small><br>
+                                    <small>Log P(${classAnalysis.className}) = ${classAnalysis.logPriorProbability.toFixed(6)}</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>2. Tổng Log Likelihood:</strong><br>
+                                    <small>Σ log P(Xi|${classAnalysis.className}) = ${classAnalysis.totalLogLikelihood.toFixed(6)}</small><br>
+                                    <small>(từ ${classAnalysis.features.length} đặc trưng có giá trị > 0)</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>3. Kết quả cuối:</strong><br>
+                                    <small>log P(${classAnalysis.className}|X) = ${classAnalysis.finalLogProbability.toFixed(6)}</small><br>
+                                    <small>${classAnalysis.isPredicted ? '🎯 <span class="text-success fw-bold">WINNER</span>' : ''}</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Chi tiết Gaussian calculation cho top features -->
+                            ${classAnalysis.features.length > 0 ? `
+                            <hr>
+                            <h6 class="mt-3"><i class="fas fa-chart-line me-2"></i>Chi tiết tính Gaussian cho ${Math.min(3, classAnalysis.features.length)} đặc trưng hàng đầu:</h6>
+                            <div class="row">
+                                ${classAnalysis.features.slice(0, 3).map(feature => `
+                                    <div class="col-md-4 mb-2">
+                                        <div class="border p-2 rounded">
+                                            <strong>${feature.featureName}</strong> = ${feature.featureValue}<br>
+                                            <small class="text-muted">μ = ${feature.mean.toFixed(3)}, σ² = ${feature.variance.toFixed(3)}</small><br>
+                                            <div style="font-size: 0.8em; font-family: monospace;">
+                                                P(${feature.featureValue}|${classAnalysis.className}) = ${feature.gaussianProbability.toExponential(3)}<br>
+                                                log P = ${feature.logLikelihood.toFixed(6)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            
+            return `
+                <!-- Công thức Naive Bayes -->
+                <div class="card mb-3 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Công thức Naive Bayes</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">1. Công thức tổng quát:</h6>
+                                <div class="bg-light p-3 mb-3" style="font-family: 'Courier New', monospace;">
+                                    <strong>P(C|X) = P(C) × ∏ P(Xi|C)</strong><br>
+                                    <small class="text-muted">Trong đó:</small><br>
+                                    <small>• P(C|X): Xác suất lớp C cho văn bản X</small><br>
+                                    <small>• P(C): Xác suất tiên nghiệm của lớp C</small><br>
+                                    <small>• P(Xi|C): Likelihood của đặc trưng Xi với lớp C</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">2. Dạng Logarithm (sử dụng):</h6>
+                                <div class="bg-light p-3 mb-3" style="font-family: 'Courier New', monospace;">
+                                    <strong>log P(C|X) = log P(C) + Σ log P(Xi|C)</strong><br>
+                                    <small class="text-muted">Với Gaussian Distribution:</small><br>
+                                    <small>• P(Xi|C) = (1/√(2πσ²)) × e^(-(Xi-μ)²/(2σ²))</small><br>
+                                    <small>• μ, σ²: mean và variance từ training data</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning mb-0">
+                            <small><i class="fas fa-lightbulb me-1"></i>
+                            <strong>Lưu ý:</strong> Sử dụng log để tránh underflow khi nhân nhiều xác suất nhỏ. 
+                            Lớp có log probability cao nhất sẽ được chọn làm kết quả dự đoán.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông tin tổng quan -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Thông tin Model</h6>
+                            <ul class="mb-0 small">
+                                <li>Tổng mẫu training: ${data.model.totalSamples}</li>
+                                <li>Số lớp: ${data.model.totalClasses}</li>
+                                <li>Số đặc trưng: ${data.model.totalFeatures}</li>
+                                <li>Đặc trưng có giá trị > 0: ${data.significantFeatures}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-${data.isCorrect ? 'success' : 'warning'}">
+                            <h6><i class="fas fa-${data.isCorrect ? 'check-circle' : 'exclamation-triangle'} me-2"></i>Kết quả dự đoán</h6>
+                            <ul class="mb-0 small">
+                                <li><strong>Lớp dự đoán:</strong> ${data.predictedClass}</li>
+                                <li><strong>Log Probability:</strong> ${data.predictedLogProbability.toFixed(6)}</li>
+                                <li><strong>Trạng thái:</strong> ${data.isCorrect ? 'Chính xác' : 'Cần xem xét'}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Đặc trưng có giá trị > 0 -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-list me-2"></i>Đặc trưng có giá trị > 0 (10 đầu tiên)</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="row small">${nonZeroFeaturesHtml}</ul>
+                    </div>
+                </div>
+
+                <!-- Quá trình tính toán cho từng lớp -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Quá trình tính toán cho từng lớp</h6>
+                    </div>
+                    <div class="card-body">
+                        ${classAnalysesHtml}
+                    </div>
+                </div>
+
+                <!-- Bảng kết quả cuối cùng -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-flag-checkered me-2"></i>Bảng xếp hạng cuối cùng</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr><th>Rank</th><th>Lớp</th><th>Log Probability</th><th>Kết quả</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${data.classAnalyses
+                                        .sort((a, b) => b.finalLogProbability - a.finalLogProbability)
+                                        .map(c => `
+                                            <tr class="${c.isPredicted ? 'table-success' : ''}">
+                                                <td><strong>#${c.rank}</strong></td>
+                                                <td>${c.className} ${c.isPredicted ? '🏆' : ''}</td>
+                                                <td><code>${c.finalLogProbability.toFixed(6)}</code></td>
+                                                <td>${c.isPredicted ? '<span class="badge bg-success">WINNER</span>' : ''}</td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // In kết quả
+        function printAnalysis() {
+            window.print();
+        }
+
+        // Xử lý hiển thị thông tin model
+        document.getElementById('showModelInfoBtn').addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...';
+
+            fetch('/Home/ShowModelInfo', {
+                method: 'GET',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('ℹ️ ' + data.message + '\n\n📊 Thông tin Model Naive Bayes:\n- Số lượng lớp và đặc trưng\n- Xác suất tiên nghiệm P(C)\n- Thống kê đặc trưng (mean, variance)\n- Các thông số phân phối Gaussian\n\n🖥️ Vui lòng kiểm tra console của server để xem chi tiết!');
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Có lỗi xảy ra khi lấy thông tin model!');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+    </script>
+}

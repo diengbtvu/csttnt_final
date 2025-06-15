@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  vietnamese-news-app:
+    build:
+      context: ./VietnameseNewsWeb
+      dockerfile: Dockerfile
+    container_name: vietnamese-news-classification
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:5000
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - LC_ALL=vi_VN.UTF-8
+      - LANG=vi_VN.UTF-8
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  app-logs:
+    driver: local

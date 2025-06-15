@@ -1,0 +1,161 @@
+@model ClassificationResponse
+@{
+    ViewData["Title"] = "Kết quả phân loại";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Kết quả chính -->
+            <div class="card shadow-lg mb-4 result-card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Kết quả phân loại
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="text-success mb-3">
+                                <i class="fas fa-tag me-2"></i>
+                                Danh mục: <strong>@Model.GetCategoryDisplayName()</strong>
+                            </h4>
+                            <div class="mb-3">
+                                <span class="badge bg-@Model.GetConfidenceClass() confidence-badge">
+                                    <i class="fas fa-chart-line me-1"></i>
+                                    Độ tin cậy: @Model.GetConfidenceLevel() (@Model.Confidence.ToString("P1"))
+                                </span>
+                            </div>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-clock me-1"></i>
+                                Thời gian xử lý: @Model.ProcessingTime.ToString("HH:mm:ss dd/MM/yyyy")
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="display-1 text-success">
+                                @switch(Model.PredictedCategory)
+                                {
+                                    case "Business": <i class="fas fa-chart-line"></i> break;
+                                    case "Sports": <i class="fas fa-futbol"></i> break;
+                                    case "Entertainment": <i class="fas fa-film"></i> break;
+                                    case "Technology": <i class="fas fa-microchip"></i> break;
+                                    case "Health": <i class="fas fa-heartbeat"></i> break;
+                                    case "Education": <i class="fas fa-graduation-cap"></i> break;
+                                    case "Politics": <i class="fas fa-landmark"></i> break;
+                                    default: <i class="fas fa-question"></i> break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chi tiết xác suất -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Chi tiết xác suất các danh mục
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @foreach(var prob in Model.AllProbabilities.OrderByDescending(x => x.Value))
+                    {
+                        var percentage = prob.Value * 100;
+                        var isWinner = prob.Key == Model.PredictedCategory;
+                        var barClass = isWinner ? "bg-success" : "bg-secondary";
+                        var textClass = isWinner ? "fw-bold text-success" : "text-muted";
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="@textClass">
+                                    @(prob.Key switch {
+                                        "Business" => "Kinh doanh",
+                                        "Sports" => "Thể thao",
+                                        "Entertainment" => "Giải trí", 
+                                        "Technology" => "Công nghệ",
+                                        "Health" => "Sức khỏe",
+                                        "Education" => "Giáo dục",
+                                        "Politics" => "Chính trị",
+                                        _ => prob.Key
+                                    })
+                                    @if(isWinner) { <i class="fas fa-crown ms-1"></i> }
+                                </span>
+                                <span class="@textClass">@percentage.ToString("F1")%</span>
+                            </div>
+                            <div class="progress" style="height: @(isWinner ? "12px" : "8px")">
+                                <div class="progress-bar @barClass" 
+                                     role="progressbar" 
+                                     style="width: @percentage.ToString("F1")%"
+                                     aria-valuenow="@percentage" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Nội dung gốc -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Nội dung bài báo đã phân loại
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="border rounded p-3 bg-light">
+                        <p class="mb-0" style="white-space: pre-line; line-height: 1.6;">@Model.OriginalText</p>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Độ dài: @Model.OriginalText.Length ký tự
+                    </small>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="text-center">
+                <a asp-action="Index" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-plus me-2"></i>
+                    Phân loại bài báo khác
+                </a>
+                <button class="btn btn-outline-secondary btn-lg" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>
+                    In kết quả
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Smooth scroll animation
+        window.addEventListener('load', function() {
+            document.querySelector('.result-card').style.opacity = '0';
+            document.querySelector('.result-card').style.transform = 'translateY(30px)';
+            
+            setTimeout(function() {
+                document.querySelector('.result-card').style.transition = 'all 0.6s ease';
+                document.querySelector('.result-card').style.opacity = '1';
+                document.querySelector('.result-card').style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // Copy result to clipboard
+        function copyResult() {
+            const result = `Kết quả phân loại bài báo:
+Danh mục: @Model.GetCategoryDisplayName()
+Độ tin cậy: @Model.Confidence.ToString("P1")
+Thời gian: @Model.ProcessingTime.ToString("dd/MM/yyyy HH:mm:ss")`;
+            
+            navigator.clipboard.writeText(result).then(function() {
+                alert('Đã copy kết quả vào clipboard!');
+            });
+        }
+    </script>
+}

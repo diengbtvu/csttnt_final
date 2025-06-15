@@ -1,0 +1,363 @@
+@model NaiveBayesAnalysisResult
+@{
+    ViewData["Title"] = "Phân tích chi tiết Naive Bayes";
+}
+
+<div class="container-fluid my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>
+                        Phân tích chi tiết thuật toán Naive Bayes
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Thời gian phân tích:</strong> @Model.AnalysisTime.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                            <p><strong>Tổng số đặc trưng:</strong> @Model.TotalFeatures</p>
+                            <p><strong>Đặc trưng có giá trị > 0:</strong> @Model.SignificantFeatures</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Kết quả dự đoán:</strong> 
+                                <span class="badge bg-@(Model.IsCorrect ? "success" : "warning") fs-6">
+                                    @Model.PredictedClass
+                                </span>
+                            </p>
+                            <p><strong>Công thức Naive Bayes:</strong> <code>@Model.NaiveBayesFormula</code></p>
+                            <p><strong>Dạng logarithm:</strong> <code>@Model.LogFormula</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Văn bản gốc -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-newspaper me-2"></i>
+                        Văn bản phân tích
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+                        @Model.OriginalText
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin Model -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-database me-2"></i>
+                        Thông tin Model
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><strong>Tổng mẫu training:</strong> @Model.Model.TotalSamples</li>
+                        <li><strong>Số lớp:</strong> @Model.Model.TotalClasses</li>
+                        <li><strong>Số đặc trưng:</strong> @Model.Model.TotalFeatures</li>
+                    </ul>
+                    
+                    <h6 class="mt-3 mb-2">Xác suất tiên nghiệm P(C):</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Lớp</th>
+                                    <th>P(C)</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var kvp in Model.Model.ClassProbabilities.OrderByDescending(x => x.Value))
+                                {
+                                    <tr>
+                                        <td>@kvp.Key</td>
+                                        <td>@kvp.Value.ToString("F6")</td>
+                                        <td>@((kvp.Value * 100).ToString("F2"))%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Đặc trưng có giá trị > 0
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.NonZeroFeatures.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Đặc trưng</th>
+                                        <th>Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var feature in Model.NonZeroFeatures)
+                                    {
+                                        <tr>
+                                            <td><code>@feature["name"]</code></td>
+                                            <td>@((double)feature["value"]).ToString("F1")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Không có đặc trưng nào có giá trị > 0</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quá trình tính toán chi tiết -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Quá trình tính toán chi tiết cho từng lớp
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @foreach (var classAnalysis in Model.ClassAnalyses.OrderByDescending(c => c.FinalLogProbability))
+                    {
+                        <div class="card mb-3 @(classAnalysis.IsPredicted ? "border-success" : "")">
+                            <div class="card-header @(classAnalysis.IsPredicted ? "bg-success text-white" : "bg-light")">
+                                <h5 class="mb-0">
+                                    @if (classAnalysis.IsPredicted)
+                                    {
+                                        <i class="fas fa-trophy me-2"></i>
+                                    }
+                                    LỚP: @classAnalysis.ClassName.ToUpper() 
+                                    <span class="badge @(classAnalysis.IsPredicted ? "bg-light text-success" : "bg-secondary") ms-2">
+                                        Rank #@classAnalysis.Rank
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Bước 1: Xác suất tiên nghiệm -->
+                                <div class="mb-3">
+                                    <h6 class="text-primary">
+                                        <i class="fas fa-step-forward me-1"></i>
+                                        BƯỚC 1 - Xác suất tiên nghiệm:
+                                    </h6>
+                                    <div class="ps-3">
+                                        <p class="mb-1">P(@classAnalysis.ClassName) = @classAnalysis.PriorProbability.ToString("F6")</p>
+                                        <p class="mb-0">Log P(@classAnalysis.ClassName) = ln(@classAnalysis.PriorProbability.ToString("F6")) = <strong>@classAnalysis.LogPriorProbability.ToString("F6")</strong></p>
+                                    </div>
+                                </div>
+
+                                <!-- Bước 2: Likelihood -->
+                                <div class="mb-3">
+                                    <h6 class="text-primary">
+                                        <i class="fas fa-step-forward me-1"></i>
+                                        BƯỚC 2 - Tính Likelihood cho @classAnalysis.Features.Count đặc trưng:
+                                    </h6>
+                                    
+                                    @if (classAnalysis.Features.Any())
+                                    {
+                                        <div class="accordion" id="features-@classAnalysis.ClassName">
+                                            @for (int i = 0; i < classAnalysis.Features.Count; i++)
+                                            {
+                                                var feature = classAnalysis.Features[i];
+                                                var featureId = $"feature-{classAnalysis.ClassName}-{i}";
+                                                
+                                                <div class="accordion-item">
+                                                    <h6 class="accordion-header">
+                                                        <button class="accordion-button @(i > 2 ? "collapsed" : "")" type="button" 
+                                                                data-bs-toggle="collapse" data-bs-target="#@featureId">
+                                                            <strong>Feature [@(i+1)]: @feature.FeatureName = @feature.FeatureValue.ToString("F1")</strong>
+                                                            <span class="badge bg-info ms-2">Log: @feature.LogLikelihood.ToString("F6")</span>
+                                                        </button>
+                                                    </h6>
+                                                    <div id="@featureId" class="accordion-collapse collapse @(i < 3 ? "show" : "")" 
+                                                         data-bs-parent="#features-@classAnalysis.ClassName">
+                                                        <div class="accordion-body">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <h6>Thống kê từ training data:</h6>
+                                                                    <ul class="list-unstyled">
+                                                                        <li><strong>Mean (μ):</strong> @feature.Mean.ToString("F3")</li>
+                                                                        <li><strong>Variance (σ²):</strong> @feature.Variance.ToString("F3")</li>
+                                                                        <li><strong>Standard Deviation (σ):</strong> @feature.StandardDeviation.ToString("F3")</li>
+                                                                    </ul>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h6>Tính toán Gaussian:</h6>
+                                                                    <p class="mb-1"><small><code>@feature.GaussianFormula</code></small></p>
+                                                                    <p class="mb-1"><small>@feature.GaussianCalculation</small></p>
+                                                                    <p class="mb-0"><strong>Log P = ln(@feature.GaussianProbability.ToString("E6")) = @feature.LogLikelihood.ToString("F6")</strong></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        
+                                        <div class="mt-3 p-2 bg-light rounded">
+                                            <strong>Tổng Log Likelihood: @classAnalysis.TotalLogLikelihood.ToString("F6")</strong>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">Không có đặc trưng nào để tính toán</p>
+                                    }
+                                </div>
+
+                                <!-- Bước 3: Kết hợp -->
+                                <div class="mb-3">
+                                    <h6 class="text-primary">
+                                        <i class="fas fa-step-forward me-1"></i>
+                                        BƯỚC 3 - Kết hợp theo công thức Naive Bayes:
+                                    </h6>
+                                    <div class="ps-3">
+                                        <p class="mb-1">Log P(@classAnalysis.ClassName|X) = Log P(@classAnalysis.ClassName) + Σ Log P(Xi|@classAnalysis.ClassName)</p>
+                                        <p class="mb-1">= @classAnalysis.LogPriorProbability.ToString("F6") + (@classAnalysis.TotalLogLikelihood.ToString("F6"))</p>
+                                        <p class="mb-0"><strong>= @classAnalysis.FinalLogProbability.ToString("F6")</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kết quả cuối cùng -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-flag-checkered me-2"></i>
+                        BƯỚC 4 - So sánh và kết quả cuối cùng
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Lớp</th>
+                                    <th>Log Probability</th>
+                                    <th>Dự đoán</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var classAnalysis in Model.ClassAnalyses.OrderByDescending(c => c.FinalLogProbability))
+                                {
+                                    <tr class="@(classAnalysis.IsPredicted ? "table-success" : "")">
+                                        <td><strong>#@classAnalysis.Rank</strong></td>
+                                        <td>
+                                            @classAnalysis.ClassName
+                                            @if (classAnalysis.IsPredicted)
+                                            {
+                                                <i class="fas fa-trophy text-warning ms-2"></i>
+                                            }
+                                        </td>
+                                        <td><code>@classAnalysis.FinalLogProbability.ToString("F6")</code></td>
+                                        <td>
+                                            @if (classAnalysis.IsPredicted)
+                                            {
+                                                <span class="badge bg-success">WINNER</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-@(Model.IsCorrect ? "success" : "warning")">
+                                <h5>
+                                    <i class="fas fa-@(Model.IsCorrect ? "check-circle" : "exclamation-triangle") me-2"></i>
+                                    Kết quả dự đoán
+                                </h5>
+                                <p class="mb-1"><strong>Lớp dự đoán:</strong> @Model.PredictedClass</p>
+                                <p class="mb-1"><strong>Log Probability:</strong> @Model.PredictedLogProbability.ToString("F6")</p>
+                                <p class="mb-0"><strong>Trạng thái:</strong> @(Model.IsCorrect ? "Chính xác" : "Sai")</p>
+                            </div>
+                        </div>
+                        
+                        @if (!Model.IsCorrect && !string.IsNullOrEmpty(Model.ActualCategory) && Model.ActualCategory != "Unknown")
+                        {
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <h5>
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Thông tin bổ sung
+                                    </h5>
+                                    <p class="mb-1"><strong>Lớp thực tế:</strong> @Model.ActualCategory</p>
+                                    <p class="mb-1"><strong>Thứ hạng lớp thực tế:</strong> #@Model.ActualClassRank</p>
+                                    <p class="mb-0"><strong>Chênh lệch log prob:</strong> @Model.LogProbabilityDifference.ToString("F6")</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nút quay lại -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="/" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-scroll to results
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scroll behavior for accordion
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    setTimeout(() => {
+                        this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 300);
+                });
+            });
+        });
+    </script>
+}

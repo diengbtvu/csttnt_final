@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Giới thiệu";
+}
+
+<div class="gradient-bg text-white py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-info-circle me-3"></i>
+                    Giới thiệu về hệ thống
+                </h1>
+                <p class="lead">
+                    Hệ thống phân loại tin tức tiếng Việt sử dụng thuật toán Naïve Bayes
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Đồ án cuối kỳ
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">Thông tin đồ án:</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Môn học:</strong> Cơ sở trí tuệ nhân tạo</li>
+                                <li><strong>Đề tài:</strong> Phân loại tin tức tiếng Việt</li>
+                                <li><strong>Thuật toán:</strong> Naïve Bayes</li>
+                                <li><strong>Năm thực hiện:</strong> 2025</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">Công nghệ sử dụng:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fab fa-microsoft text-info me-2"></i>ASP.NET Core 7.0</li>
+                                <li><i class="fab fa-html5 text-danger me-2"></i>HTML5 & CSS3</li>
+                                <li><i class="fab fa-js text-warning me-2"></i>JavaScript</li>
+                                <li><i class="fab fa-bootstrap text-primary me-2"></i>Bootstrap 5</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Thuật toán Naïve Bayes
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Thuật toán Naïve Bayes là một phương pháp phân loại xác suất dựa trên định lý Bayes với giả định "ngây thơ" 
+                        về sự độc lập có điều kiện giữa các đặc trưng.
+                    </p>
+                    
+                    <h6 class="fw-bold text-success mt-4">Ưu điểm:</h6>
+                    <ul>
+                        <li>Tốc độ huấn luyện và phân loại nhanh</li>
+                        <li>Hoạt động tốt với dữ liệu nhỏ</li>
+                        <li>Không cần nhiều tham số điều chỉnh</li>
+                        <li>Hiệu quả với phân loại văn bản</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-warning mt-4">Công thức cơ bản:</h6>
+                    <div class="bg-light p-3 rounded">
+                        <code>P(c|x) = P(x|c) * P(c) / P(x)</code>
+                        <br><small class="text-muted">Trong đó: c = class, x = features</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-database me-2"></i>
+                        Dữ liệu và đặc trưng
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-info">Thống kê dataset:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-file-alt text-primary me-2"></i>1.000 bài báo</li>
+                                <li><i class="fas fa-tags text-success me-2"></i>7 danh mục</li>
+                                <li><i class="fas fa-key text-warning me-2"></i>120+ từ khóa</li>
+                                <li><i class="fas fa-balance-scale text-info me-2"></i>Dữ liệu cân bằng</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-info">Phương pháp:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-search text-primary me-2"></i>Bag of Words</li>
+                                <li><i class="fas fa-calculator text-success me-2"></i>TF (Term Frequency)</li>
+                                <li><i class="fas fa-chart-line text-warning me-2"></i>Gaussian Distribution</li>
+                                <li><i class="fas fa-shield-alt text-info me-2"></i>Smoothing Techniques</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Kết quả thực nghiệm
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-success">80.0%</h2>
+                                <h6>Accuracy</h6>
+                                <small class="text-muted">Naïve Bayes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-info">78.2%</h2>
+                                <h6>Accuracy</h6>
+                                <small class="text-muted">Random Forest</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-warning">59.1%</h2>
+                                <h6>Accuracy</h6>
+                                <small class="text-muted">Decision Tree</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-trophy me-2"></i>
+                        <strong>Naïve Bayes đạt hiệu suất tốt nhất</strong> với độ chính xác 80% trên tập dữ liệu tin tức tiếng Việt.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-lg">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>
+                        Hướng phát triển
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-secondary">Cải tiến thuật toán:</h6>
+                            <ul>
+                                <li>Multinomial Naïve Bayes</li>
+                                <li>TF-IDF features</li>
+                                <li>N-gram models</li>
+                                <li>Ensemble methods</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-secondary">Mở rộng ứng dụng:</h6>
+                            <ul>
+                                <li>API REST endpoints</li>
+                                <li>Real-time classification</li>
+                                <li>Mobile applications</li>
+                                <li>Multi-language support</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

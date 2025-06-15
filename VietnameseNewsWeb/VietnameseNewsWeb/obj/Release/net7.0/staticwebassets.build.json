@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "NRT3YO/CA+JKafF4ORbdPPA17hgz4eWe95dWVtYTYLw=",
+  "Source": "VietnameseNewsWeb",
+  "BasePath": "_content/VietnameseNewsWeb",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "VietnameseNewsWeb/wwwroot",
+      "Source": "VietnameseNewsWeb",
+      "ContentRoot": "/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/wwwroot/",
+      "BasePath": "_content/VietnameseNewsWeb",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

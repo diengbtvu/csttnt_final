@@ -1,0 +1,83 @@
+Building...
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Models/ClassificationResult.cs(14,16): warning CS8618: Non-nullable property 'PredictedClass' must contain a non-null value when exiting constructor. Consider declaring the property as nullable. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Models/EvaluationResult.cs(36,16): warning CS8618: Non-nullable property 'ConfusionMatrix' must contain a non-null value when exiting constructor. Consider declaring the property as nullable. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Models/NewsArticle.cs(14,16): warning CS8618: Non-nullable property 'Category' must contain a non-null value when exiting constructor. Consider declaring the property as nullable. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NewsClassificationService.cs(598,24): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NewsClassificationService.cs(610,28): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NewsClassificationService.cs(620,24): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NewsClassificationService.cs(625,24): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NaiveBayesClassifier.cs(458,24): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/Services/NaiveBayesClassifier.cs(494,24): warning CS8603: Possible null reference return. [/home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/VietnameseNewsWeb.csproj]
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5023
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+Loaded 120 features from CSV
+Đã load 1000 bài báo từ /home/gb/csttnt/VietnameseNewsWeb/VietnameseNewsWeb/vietnamese_news_dataset_cleaned.csv
+Bắt đầu huấn luyện model...
+Số lớp: 7
+Số đặc trưng: 120
+Xác suất tiên nghiệm:
+  P(Entertainment) = 0.1430
+  P(Sports) = 0.1430
+  P(Business) = 0.1430
+  P(Technology) = 0.1420
+  P(Health) = 0.1430
+  P(Education) = 0.1430
+  P(Politics) = 0.1430
+Đã tính thống kê cho 7 lớp và 120 đặc trưng
+Hoàn thành huấn luyện trong 61ms
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      Classifier trained with 1000 samples
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'âm nhạc' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'ca sĩ' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'chương trình' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'âm nhạc' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'ca sĩ' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'chương trình' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'cuộc thi' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'chung kết' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'tài năng' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'biểu diễn' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'âm nhạc' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'ca sĩ' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'chương trình' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'cuộc thi' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'chung kết' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'tài năng' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'biểu diễn' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'âm nhạc' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      Using pure Naive Bayes classification
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'cuộc thi' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      Using pure Naive Bayes classification
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'cuộc thi' boosted from 1 to 4.5
+info: VietnameseNewsWeb.Services.NewsClassificationService[0]
+      ENTERTAINMENT BOOST: 'âm nhạc' boosted from 1 to 4.5
