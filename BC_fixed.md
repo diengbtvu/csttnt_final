@@ -7,15 +7,16 @@
 ## MỤC LỤC
 
 1. [Giới thiệu](#1-giới-thiệu)
-2. [Hệ thống thông tin và xác định đặc trưng](#2-hệ-thống-thông-tin-và-xác-định-đặc-trưng)
-3. [Xây dựng tập dữ liệu](#3-xây-dựng-tập-dữ-liệu)
-4. [Ví dụ phân loại với tập dữ liệu nhỏ](#4-ví-dụ-phân-loại-với-tập-dữ-liệu-nhỏ)
-5. [Thực hiện phân loại bằng Weka](#5-thực-hiện-phân-loại-bằng-weka)
-6. [Cài đặt thuật toán Naïve Bayes bằng C#](#6-cài-đặt-thuật-toán-naïve-bayes-bằng-c)
-7. [Kết quả và đánh giá](#7-kết-quả-và-đánh-giá)
-8. [Kết luận](#8-kết-luận)
-9. [Tài liệu tham khảo](#9-tài-liệu-tham-khảo)
-10. [Khắc phục lỗi và cải tiến hệ thống](#9-khắc-phục-lỗi-và-cải-tiến-hệ-thống)
+2. [Cơ sở lý thuyết thuật toán Naive Bayes](#2-cơ-sở-lý-thuyết-thuật-toán-naive-bayes)
+3. [Hệ thống thông tin và xác định đặc trưng](#3-hệ-thống-thông-tin-và-xác-định-đặc-trưng)
+4. [Xây dựng tập dữ liệu](#4-xây-dựng-tập-dữ-liệu)
+5. [Ví dụ phân loại với tập dữ liệu nhỏ](#5-ví-dụ-phân-loại-với-tập-dữ-liệu-nhỏ)
+6. [Thực hiện phân loại bằng Weka](#6-thực-hiện-phân-loại-bằng-weka)
+7. [Cài đặt thuật toán Naïve Bayes bằng C#](#7-cài-đặt-thuật-toán-naïve-bayes-bằng-c)
+8. [Kết quả và đánh giá](#8-kết-quả-và-đánh-giá)
+9. [Kết luận](#9-kết-luận)
+10. [Tài liệu tham khảo](#10-tài-liệu-tham-khảo)
+11. [Khắc phục lỗi và cải tiến hệ thống](#11-khắc-phục-lỗi-và-cải-tiến-hệ-thống)
 
 ---
 
@@ -42,9 +43,231 @@ Nghiên cứu tập trung vào:
 
 ---
 
-## 2. HỆ THỐNG THÔNG TIN VÀ XÁC ĐỊNH ĐẶC TRƯNG
+## 2. Cơ SỞ LÝ THUYẾT THUẬT TOÁN NAIVE BAYES
 
-### 2.1. Hệ thống thông tin được chọn
+### 2.1. Giới thiệu về thuật toán Naive Bayes
+
+Naive Bayes là một thuật toán phân loại dựa trên định lý Bayes với giả định "ngây thơ" (naive) rằng các đặc trưng độc lập với nhau khi biết nhãn lớp. Mặc dù giả định này hiếm khi đúng trong thực tế, Naive Bayes vẫn hoạt động hiệu quả trong nhiều ứng dụng, đặc biệt là phân loại văn bản.
+
+### 2.2. Định lý Bayes - Nền tảng toán học
+
+#### 2.2.1. Công thức cơ bản
+
+Định lý Bayes được phát biểu như sau:
+
+```
+P(A|B) = P(B|A) × P(A) / P(B)
+```
+
+Trong đó:
+- **P(A|B)**: Xác suất hậu nghiệm (posterior probability) - xác suất của A khi biết B
+- **P(B|A)**: Khả năng (likelihood) - xác suất của B khi biết A
+- **P(A)**: Xác suất tiên nghiệm (prior probability) - xác suất ban đầu của A
+- **P(B)**: Xác suất biên (marginal probability) - xác suất tổng của B
+
+#### 2.2.2. Áp dụng vào bài toán phân loại
+
+Trong bài toán phân loại, chúng ta muốn tìm lớp C có xác suất cao nhất khi biết vector đặc trưng X:
+
+```
+P(C|X) = P(X|C) × P(C) / P(X)
+```
+
+Vì P(X) không đổi với mọi lớp, ta chỉ cần so sánh:
+
+```
+P(C|X) ∝ P(X|C) × P(C)
+```
+
+### 2.3. Giả định độc lập và công thức Naive Bayes
+
+#### 2.3.1. Giả định độc lập có điều kiện
+
+Giả sử vector đặc trưng X = (x₁, x₂, ..., xₙ). Naive Bayes giả định rằng các đặc trưng độc lập với nhau khi biết lớp C:
+
+```
+P(x₁, x₂, ..., xₙ | C) = P(x₁|C) × P(x₂|C) × ... × P(xₙ|C) = ∏ᵢ₌₁ⁿ P(xᵢ|C)
+```
+
+#### 2.3.2. Công thức Naive Bayes hoàn chỉnh
+
+Kết hợp giả định độc lập với định lý Bayes:
+
+```
+P(C|X) = P(C) × ∏ᵢ₌₁ⁿ P(xᵢ|C) / P(X)
+```
+
+Để phân loại, chúng ta chọn lớp có xác suất cao nhất:
+
+```
+Ĉ = argmax_C P(C) × ∏ᵢ₌₁ⁿ P(xᵢ|C)
+```
+
+### 2.4. Các biến thể của Naive Bayes
+
+#### 2.4.1. Gaussian Naive Bayes
+
+Sử dụng khi các đặc trưng là liên tục và tuân theo phân phối chuẩn:
+
+```
+P(xᵢ|C) = 1/√(2πσ²_ic) × exp(-(xᵢ - μ_ic)²/(2σ²_ic))
+```
+
+Trong đó:
+- **μ_ic**: Trung bình của đặc trưng i trong lớp C
+- **σ²_ic**: Phương sai của đặc trưng i trong lớp C
+
+#### 2.4.2. Multinomial Naive Bayes
+
+Phù hợp với dữ liệu đếm (như số lần xuất hiện từ khóa):
+
+```
+P(xᵢ|C) = (N_ic + α) / (N_c + α × |V|)
+```
+
+Trong đó:
+- **N_ic**: Số lần đặc trưng i xuất hiện trong lớp C
+- **N_c**: Tổng số đặc trưng trong lớp C
+- **α**: Tham số làm mượt Laplace (thường α = 1)
+- **|V|**: Số lượng đặc trưng duy nhất
+
+#### 2.4.3. Bernoulli Naive Bayes
+
+Sử dụng cho đặc trưng nhị phân (có/không có):
+
+```
+P(xᵢ|C) = P(i|C) × xᵢ + (1 - P(i|C)) × (1 - xᵢ)
+```
+
+### 2.5. Xử lý vấn đề thực tế
+
+#### 2.5.1. Vấn đề Zero Probability
+
+Khi P(xᵢ|C) = 0, toàn bộ tích sẽ bằng 0. Giải pháp Laplace Smoothing:
+
+```
+P(xᵢ|C) = (count(xᵢ, C) + α) / (count(C) + α × |features|)
+```
+
+#### 2.5.2. Vấn đề Underflow
+
+Với nhiều đặc trưng, tích các xác suất có thể rất nhỏ. Sử dụng log-probability:
+
+```
+log P(C|X) = log P(C) + Σᵢ₌₁ⁿ log P(xᵢ|C)
+```
+
+#### 2.5.3. Ước lượng tham số
+
+**Xác suất tiên nghiệm:**
+```
+P(C) = count(C) / N_total
+```
+
+**Tham số Gaussian:**
+```
+μ_ic = (1/N_c) × Σⱼ:yⱼ=c xᵢⱼ
+σ²_ic = (1/N_c) × Σⱼ:yⱼ=c (xᵢⱼ - μ_ic)²
+```
+
+### 2.6. Ưu điểm và nhược điểm
+
+#### 2.6.1. Ưu điểm
+
+1. **Đơn giản và nhanh**: Độ phức tạp O(n×m) với n mẫu, m đặc trưng
+2. **Ít dữ liệu huấn luyện**: Hoạt động tốt với dataset nhỏ
+3. **Hiệu quả với nhiều lớp**: Phù hợp multi-class classification
+4. **Không overfitting**: Ít tham số cần học
+5. **Xử lý tốt dữ liệu thiếu**: Có thể bỏ qua missing features
+6. **Baseline mạnh**: Thường là điểm khởi đầu tốt cho các bài toán
+
+#### 2.6.2. Nhược điểm
+
+1. **Giả định độc lập**: Hiếm khi đúng trong thực tế
+2. **Categorical inputs**: Cần xử lý đặc biệt cho dữ liệu liên tục
+3. **Correlations**: Không capture được mối quan hệ giữa features
+4. **Skewed data**: Nhạy cảm với phân bố không cân bằng
+
+### 2.7. Áp dụng vào phân loại văn bản
+
+#### 2.7.1. Biểu diễn văn bản
+
+Trong bài toán phân loại tin tức, mỗi bài báo được biểu diễn bằng vector:
+```
+d = (w₁, w₂, ..., w_k)
+```
+Trong đó wᵢ là trọng số của từ khóa thứ i (có thể là TF, TF-IDF, hoặc binary).
+
+#### 2.7.2. Công thức áp dụng
+
+Xác suất một bài báo d thuộc danh mục c:
+
+```
+P(c|d) ∝ P(c) × ∏ᵢ₌₁ᵏ P(wᵢ|c)
+```
+
+**Với Gaussian Naive Bayes (dự án này sử dụng):**
+```
+P(wᵢ|c) = 1/√(2πσ²_ic) × exp(-(wᵢ - μ_ic)²/(2σ²_ic))
+```
+
+#### 2.7.3. Quy trình phân loại
+
+1. **Training phase:**
+   - Tính P(c) cho mỗi danh mục
+   - Tính μ_ic và σ²_ic cho mỗi từ khóa trong mỗi danh mục
+
+2. **Classification phase:**
+   - Tính P(c|d) cho mỗi danh mục c
+   - Chọn danh mục có xác suất cao nhất
+
+### 2.8. Ví dụ minh họa chi tiết
+
+#### 2.8.1. Dữ liệu mẫu
+
+Giả sử có 3 bài báo:
+- **Bài 1**: "bóng đá": 5, "cầu thủ": 3, "doanh nghiệp": 0 → Sports
+- **Bài 2**: "bóng đá": 0, "cầu thủ": 0, "doanh nghiệp": 8 → Business  
+- **Bài 3**: "bóng đá": 2, "cầu thủ": 1, "doanh nghiệp": 6 → ?
+
+#### 2.8.2. Tính toán xác suất tiên nghiệm
+
+```
+P(Sports) = 1/2 = 0.5
+P(Business) = 1/2 = 0.5
+```
+
+#### 2.8.3. Tính tham số Gaussian
+
+**Cho Sports:**
+- μ_bóng_đá,Sports = 5, σ²_bóng_đá,Sports = 0 (chỉ 1 mẫu)
+- μ_cầu_thủ,Sports = 3, σ²_cầu_thủ,Sports = 0
+- μ_doanh_nghiệp,Sports = 0, σ²_doanh_nghiệp,Sports = 0
+
+**Cho Business:**
+- μ_bóng_đá,Business = 0, σ²_bóng_đá,Business = 0  
+- μ_cầu_thủ,Business = 0, σ²_cầu_thủ,Business = 0
+- μ_doanh_nghiệp,Business = 8, σ²_doanh_nghiệp,Business = 0
+
+#### 2.8.4. Phân loại bài 3
+
+**Áp dụng smoothing để tránh σ² = 0:**
+
+Giả sử σ²_min = 0.1 cho tất cả features.
+
+```
+P(Sports|bài3) ∝ P(Sports) × P(2|bóng_đá,Sports) × P(1|cầu_thủ,Sports) × P(6|doanh_nghiệp,Sports)
+
+P(Business|bài3) ∝ P(Business) × P(2|bóng_đá,Business) × P(1|cầu_thủ,Business) × P(6|doanh_nghiệp,Business)
+```
+
+So sánh hai giá trị này để đưa ra quyết định phân loại.
+
+---
+
+## 3. HỆ THỐNG THÔNG TIN VÀ XÁC ĐỊNH ĐẶC TRƯNG
+
+### 3.1. Hệ thống thông tin được chọn
 
 **Hệ thống phân loại tin tức tiếng Việt** được chọn làm đối tượng nghiên cứu với các lý do sau:
 - Tính thực tiễn cao trong ứng dụng
@@ -52,16 +275,16 @@ Nghiên cứu tập trung vào:
 - Có thể áp dụng nhiều thuật toán machine learning khác nhau
 - Phù hợp với việc đánh giá hiệu quả của các thuật toán phân loại
 
-### 2.2. Xác định các đặc trưng
+### 3.2. Xác định các đặc trưng
 
-#### 2.2.1. Phương pháp biểu diễn văn bản
+#### 3.2.1. Phương pháp biểu diễn văn bản
 
 Sử dụng phương pháp **Bag of Words (BoW)** với các từ khóa đặc trưng:
 - Mỗi bài báo được biểu diễn bằng vector số lần xuất hiện của các từ khóa
 - Tổng cộng 120 từ khóa đặc trưng được sử dụng
 - Các từ khóa được chọn dựa trên tính phổ biến và khả năng phân biệt giữa các danh mục
 
-#### 2.2.2. Danh sách các đặc trưng chính
+#### 3.2.2. Danh sách các đặc trưng chính
 
 **Đặc trưng về Công nghệ:**
 - ai, blockchain, app, dien_thoai, internet, mang_5g, may_tinh, phan_mem, robot, startup, thiet_bi, thong_minh
@@ -84,16 +307,16 @@ Sử dụng phương pháp **Bag of Words (BoW)** với các từ khóa đặc t
 **Đặc trưng về Giáo dục:**
 - dai_hoc, dao_tao, diem_chuan, giao_duc, giao_vien, hoc_bong, hoc_phi, hoc_sinh, hoc_tap, mon_hoc, nam_hoc, tot_nghiep, truong_hoc
 
-### 2.3. Đặc trưng bổ sung
+### 3.3. Đặc trưng bổ sung
 
 - **id**: Mã định danh duy nhất cho mỗi bài báo
 - **category**: Nhãn phân loại (Business, Sports, Entertainment, Technology, Health, Education, Politics)
 
 ---
 
-## 3. XÂY DỰNG TẬP DỮ LIỆU
+## 4. XÂY DỰNG TẬP DỮ LIỆU
 
-### 3.1. Mô tả tập dữ liệu
+### 4.1. Mô tả tập dữ liệu
 
 **Dataset: Vietnamese News Classification**
 - Số lượng mẫu: 1.000 bài báo
@@ -101,7 +324,7 @@ Sử dụng phương pháp **Bag of Words (BoW)** với các từ khóa đặc t
 - Định dạng: CSV (Comma Separated Values)
 - Dữ liệu đã được chuẩn hóa: Tất cả giá trị null được thay thế bằng 0.0
 
-### 3.2. Phân bố dữ liệu theo danh mục
+### 4.2. Phân bố dữ liệu theo danh mục
 
 Dữ liệu có phân bố cân bằng giữa các danh mục:
 
@@ -115,16 +338,16 @@ Dữ liệu có phân bố cân bằng giữa các danh mục:
 | **Education** | 143 | 14.3% | Tin tức về giáo dục, trường học |
 | **Politics** | 143 | 14.3% | Tin tức về chính trị, chính sách |
 
-### 3.3. Đặc điểm của dữ liệu
+### 4.3. Đặc điểm của dữ liệu
 
-#### 3.3.1. Đặc điểm về đặc trưng
+#### 4.3.1. Đặc điểm về đặc trưng
 
 - **Dữ liệu số**: Tất cả các đặc trưng từ khóa là số thực (float)
 - **Giá trị thưa**: Nhiều giá trị bằng 0 (từ khóa không xuất hiện)
 - **Dữ liệu đã chuẩn hóa**: Tất cả giá trị null/thiếu đã được thay thế bằng 0.0
 - **Phạm vi giá trị**: Từ 0.0 đến 15.0 (số lần xuất hiện từ khóa)
 
-#### 3.3.2. Ví dụ về biểu diễn dữ liệu
+#### 4.3.2. Ví dụ về biểu diễn dữ liệu
 
 **Mẫu 1: Entertainment**
 - am_nhac: 13.0, co_phieu: 15.0, gameshow: 11.0, nghe_si: 9.0
@@ -136,13 +359,13 @@ Dữ liệu có phân bố cân bằng giữa các danh mục:
 
 ---
 
-## 4. VÍ DỤ PHÂN LOẠI VỚI TẬP DỮ LIỆU NHỎ
+## 5. VÍ DỤ PHÂN LOẠI VỚI TẬP DỮ LIỆU NHỎ
 
-### 4.1. Tạo tập dữ liệu mẫu
+### 5.1. Tạo tập dữ liệu mẫu
 
 Để minh họa hoạt động của thuật toán, chúng ta sử dụng 10 mẫu đầu tiên từ dataset:
 
-#### 4.1.1. Dữ liệu huấn luyện mẫu
+#### 5.1.1. Dữ liệu huấn luyện mẫu
 
 | ID | Đặc trưng chính | Danh mục |
 |----|----------------|----------|
@@ -152,44 +375,118 @@ Dữ liệu có phân bố cân bằng giữa các danh mục:
 | 4 | bau_cu:7, chinh_phu:4, luat:11 | Politics |
 | 5 | app:3, blockchain:4, cong_nghe:5 | Technology |
 
-### 4.2. Áp dụng thuật toán Naïve Bayes
+### 5.2. Áp dụng thuật toán Naïve Bayes - Ví dụ chi tiết
 
-#### 4.2.1. Tính xác suất tiên nghiệm
+#### 5.2.1. Dữ liệu huấn luyện chi tiết
 
-Dựa trên 10 mẫu đầu tiên:
-- P(Business) = 4/10 = 0.4
-- P(Sports) = 2/10 = 0.2  
-- P(Entertainment) = 2/10 = 0.2
-- P(Technology) = 2/10 = 0.2
+Giả sử chúng ta có 6 bài báo huấn luyện với 3 từ khóa:
 
-#### 4.2.2. Tính xác suất có điều kiện
+| ID | bong_da | dau_tu | am_nhac | Danh mục |
+|----|---------|--------|---------|----------|
+| 1 | 8.0 | 0.0 | 0.0 | Sports |
+| 2 | 6.0 | 1.0 | 0.0 | Sports |
+| 3 | 0.0 | 9.0 | 0.0 | Business |
+| 4 | 0.0 | 7.0 | 2.0 | Business |
+| 5 | 0.0 | 0.0 | 8.0 | Entertainment |
+| 6 | 1.0 | 0.0 | 6.0 | Entertainment |
 
-Với giả định độc lập giữa các đặc trưng, ta tính P(feature_i | class_j) cho mỗi đặc trưng và mỗi lớp sử dụng phân bố Gaussian.
+#### 5.2.2. Bước 1: Tính xác suất tiên nghiệm P(C)
 
-#### 4.2.3. Ví dụ phân loại
+```
+P(Sports) = 2/6 = 0.333
+P(Business) = 2/6 = 0.333  
+P(Entertainment) = 2/6 = 0.333
+```
 
-**Mẫu cần phân loại:**
-Đặc trưng: [am_nhac: 5, bong_da: 0, dau_tu: 2, app: 0, ...]
+#### 5.2.3. Bước 2: Tính tham số Gaussian cho mỗi đặc trưng
 
-**Quy trình tính toán:**
-1. Tính P(Entertainment | features) ∝ P(Entertainment) × P(am_nhac=5|Entertainment) × ...
-2. Tính P(Sports | features) ∝ P(Sports) × P(am_nhac=5|Sports) × ...
-3. Tính P(Business | features) ∝ P(Business) × P(am_nhac=5|Business) × ...
-4. Tính P(Technology | features) ∝ P(Technology) × P(am_nhac=5|Technology) × ...
+**Với lớp Sports:**
+- **bong_da**: μ = (8+6)/2 = 7.0, σ² = [(8-7)² + (6-7)²]/2 = 1.0
+- **dau_tu**: μ = (0+1)/2 = 0.5, σ² = [(0-0.5)² + (1-0.5)²]/2 = 0.25
+- **am_nhac**: μ = (0+0)/2 = 0.0, σ² = 0.0 → smoothing: σ² = 0.1
 
-**Kết quả:** Chọn lớp có xác suất cao nhất.
+**Với lớp Business:**
+- **bong_da**: μ = (0+0)/2 = 0.0, σ² = 0.0 → smoothing: σ² = 0.1
+- **dau_tu**: μ = (9+7)/2 = 8.0, σ² = [(9-8)² + (7-8)²]/2 = 1.0
+- **am_nhac**: μ = (0+2)/2 = 1.0, σ² = [(0-1)² + (2-1)²]/2 = 1.0
+
+**Với lớp Entertainment:**
+- **bong_da**: μ = (0+1)/2 = 0.5, σ² = [(0-0.5)² + (1-0.5)²]/2 = 0.25
+- **dau_tu**: μ = (0+0)/2 = 0.0, σ² = 0.0 → smoothing: σ² = 0.1
+- **am_nhac**: μ = (8+6)/2 = 7.0, σ² = [(8-7)² + (6-7)²]/2 = 1.0
+
+#### 5.2.4. Bước 3: Phân loại bài báo mới
+
+**Bài báo cần phân loại:** bong_da = 2.0, dau_tu = 3.0, am_nhac = 1.0
+
+**Tính P(x|Sports) sử dụng công thức Gaussian:**
+
+```
+P(bong_da=2|Sports) = 1/√(2π×1.0) × exp(-(2-7)²/(2×1.0)) = 0.0540
+P(dau_tu=3|Sports) = 1/√(2π×0.25) × exp(-(3-0.5)²/(2×0.25)) = 0.0002
+P(am_nhac=1|Sports) = 1/√(2π×0.1) × exp(-(1-0)²/(2×0.1)) = 0.0054
+```
+
+**Tính P(Sports|X):**
+```
+P(Sports|X) ∝ P(Sports) × P(bong_da=2|Sports) × P(dau_tu=3|Sports) × P(am_nhac=1|Sports)
+P(Sports|X) ∝ 0.333 × 0.0540 × 0.0002 × 0.0054 = 1.95 × 10⁻⁸
+```
+
+**Tương tự cho Business:**
+```
+P(bong_da=2|Business) = 1/√(2π×0.1) × exp(-(2-0)²/(2×0.1)) = 0.000045
+P(dau_tu=3|Business) = 1/√(2π×1.0) × exp(-(3-8)²/(2×1.0)) = 0.0175
+P(am_nhac=1|Business) = 1/√(2π×1.0) × exp(-(1-1)²/(2×1.0)) = 0.3989
+
+P(Business|X) ∝ 0.333 × 0.000045 × 0.0175 × 0.3989 = 1.05 × 10⁻⁷
+```
+
+**Và cho Entertainment:**
+```
+P(bong_da=2|Entertainment) = 1/√(2π×0.25) × exp(-(2-0.5)²/(2×0.25)) = 0.0248
+P(dau_tu=3|Entertainment) = 1/√(2π×0.1) × exp(-(3-0)²/(2×0.1)) = 0.000003
+P(am_nhac=1|Entertainment) = 1/√(2π×1.0) × exp(-(1-7)²/(2×1.0)) = 0.0540
+
+P(Entertainment|X) ∝ 0.333 × 0.0248 × 0.000003 × 0.0540 = 1.34 × 10⁻⁹
+```
+
+#### 5.2.5. Kết quả phân loại
+
+So sánh các xác suất:
+- P(Sports|X) ∝ 1.95 × 10⁻⁸
+- P(Business|X) ∝ 1.05 × 10⁻⁷ ← **Cao nhất**
+- P(Entertainment|X) ∝ 1.34 × 10⁻⁹
+
+**Kết quả:** Bài báo được phân loại vào danh mục **Business** với confidence cao nhất.
+
+#### 5.2.6. Sử dụng Log-Probability trong thực tế
+
+Để tránh underflow, trong thực tế ta sử dụng log:
+
+```
+log P(C|X) = log P(C) + Σᵢ log P(xᵢ|C)
+```
+
+**Log-probability cho Business:**
+```
+log P(Business|X) = log(0.333) + log(0.000045) + log(0.0175) + log(0.3989)
+                  = -1.099 + (-10.001) + (-4.045) + (-0.918) = -16.063
+```
+
+### 5.3. Tổng kết ví dụ
 
 ---
 
-## 5. THỰC HIỆN PHÂN LOẠI BẰNG WEKA
+## 6. THỰC HIỆN PHÂN LOẠI BẰNG WEKA
 
-### 5.1. Chuẩn bị dữ liệu cho Weka
+### 6.1. Chuẩn bị dữ liệu cho Weka
 
-#### 5.1.1. Chuyển đổi định dạng
+#### 6.1.1. Chuyển đổi định dạng
 
 Dữ liệu CSV cần được chuyển đổi sang định dạng ARFF (Attribute-Relation File Format) để sử dụng trong Weka.
 
-#### 5.1.2. Cấu trúc file ARFF
+#### 6.1.2. Cấu trúc file ARFF
 
 File ARFF bao gồm:
 - **Header section**: Định nghĩa relation và attributes
@@ -203,9 +500,9 @@ Ví dụ cấu trúc:
 - @attribute category {Business,Sports,Entertainment,Technology,Health,Education,Politics}
 - @data (followed by actual data)
 
-### 5.2. Thực hiện phân loại trong Weka
+### 6.2. Thực hiện phân loại trong Weka
 
-#### 5.2.1. Các bước thực hiện
+#### 6.2.1. Các bước thực hiện
 
 1. **Mở Weka Explorer**
 2. **Load dữ liệu:** Preprocess → Open file → chọn file ARFF
@@ -213,7 +510,7 @@ Ví dụ cấu trúc:
 4. **Cấu hình:** Test options → Cross-validation (10 folds)
 5. **Chạy thuật toán:** Start
 
-#### 5.2.2. Các thuật toán được thử nghiệm
+#### 6.2.2. Các thuật toán được thử nghiệm
 
 **1. Naïve Bayes**
 - Classifier: bayes.NaiveBayes
@@ -227,9 +524,9 @@ Ví dụ cấu trúc:
 - Classifier: trees.RandomForest
 - Parameters: Number of trees: 100, Random features: sqrt(total_features)
 
-### 5.3. Kết quả từ Weka
+### 6.3. Kết quả từ Weka
 
-#### 5.3.1. Naïve Bayes Results
+#### 6.3.1. Naïve Bayes Results
 
 **Stratified cross-validation:**
 - Correctly Classified Instances: 800 (80.0%)
@@ -238,7 +535,7 @@ Ví dụ cấu trúc:
 - Mean absolute error: 0.0571
 - Root mean squared error: 0.2358
 
-#### 5.3.2. Decision Tree (J48) Results
+#### 6.3.2. Decision Tree (J48) Results
 
 **Stratified cross-validation:**
 - Correctly Classified Instances: 591 (59.1%)
@@ -247,7 +544,7 @@ Ví dụ cấu trúc:
 - Mean absolute error: 0.1264
 - Root mean squared error: 0.3248
 
-#### 5.3.3. Random Forest Results
+#### 6.3.3. Random Forest Results
 
 **Stratified cross-validation:**
 - Correctly Classified Instances: 782 (78.2%)
@@ -256,7 +553,7 @@ Ví dụ cấu trúc:
 - Mean absolute error: 0.1483
 - Root mean squared error: 0.2429
 
-#### 5.3.4. Confusion Matrix
+#### 6.3.4. Confusion Matrix
 
 **Naïve Bayes:**
 ```
@@ -296,11 +593,11 @@ Ví dụ cấu trúc:
 
 ---
 
-## 6. CÀI ĐẶT THUẬT TOÁN NAÏVE BAYES BẰNG C#
+## 7. CÀI ĐẶT THUẬT TOÁN NAÏVE BAYES BẰNG C#
 
-### 6.1. Thiết kế chương trình
+### 7.1. Thiết kế chương trình
 
-#### 6.1.1. Cấu trúc dự án
+#### 7.1.1. Cấu trúc dự án
 
 Dự án được tổ chức theo mô hình phân lớp rõ ràng:
 
@@ -317,7 +614,7 @@ Dự án được tổ chức theo mô hình phân lớp rõ ràng:
   - MathUtils.cs: Các hàm toán học
 - **Program.cs**: Chương trình chính
 
-#### 6.1.2. Class NewsArticle
+#### 7.1.2. Class NewsArticle
 
 Class này đại diện cho một bài báo tin tức với các thuộc tính:
 - Id: Mã định danh duy nhất
@@ -325,9 +622,9 @@ Class này đại diện cho một bài báo tin tức với các thuộc tính:
 - Category: Danh mục của bài báo
 - DocLength: Độ dài văn bản (nếu có)
 
-### 6.2. Cài đặt thuật toán
+### 7.2. Cài đặt thuật toán
 
-#### 6.2.1. Class NaiveBayesClassifier
+#### 7.2.1. Class NaiveBayesClassifier
 
 Thuật toán được cài đặt với các thành phần chính:
 
@@ -347,9 +644,9 @@ Thuật toán được cài đặt với các thành phần chính:
 - Tính log probability để tránh underflow
 - Sử dụng Gaussian probability density function
 
-### 6.3. Đánh giá mô hình
+### 7.3. Đánh giá mô hình
 
-#### 6.3.1. Class ModelEvaluator
+#### 7.3.1. Class ModelEvaluator
 
 Cung cấp các metrics đánh giá:
 - Accuracy: Độ chính xác tổng thể
@@ -358,7 +655,7 @@ Cung cấp các metrics đánh giá:
 - F1-Score: Điểm số F1 cân bằng
 - Confusion Matrix: Ma trận nhầm lẫn
 
-#### 6.3.2. Quy trình đánh giá
+#### 7.3.2. Quy trình đánh giá
 
 1. Chia dữ liệu thành tập train/test (80/20)
 2. Huấn luyện model trên tập train
@@ -366,9 +663,9 @@ Cung cấp các metrics đánh giá:
 4. Tính toán các metrics đánh giá
 5. Hiển thị kết quả chi tiết
 
-### 6.4. Chương trình chính
+### 7.4. Chương trình chính
 
-#### 6.4.1. Quy trình thực thi
+#### 7.4.1. Quy trình thực thi
 
 1. **Load dữ liệu** từ file CSV
 2. **Chia dữ liệu** train/test ngẫu nhiên
@@ -376,7 +673,7 @@ Cung cấp các metrics đánh giá:
 4. **Đánh giá** hiệu suất trên tập test
 5. **Hiển thị kết quả** và demo phân loại
 
-#### 6.4.2. Demo phân loại
+#### 7.4.2. Demo phân loại
 
 Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 - Danh mục thực tế vs dự đoán
@@ -385,11 +682,11 @@ Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 
 ---
 
-## 7. KẾT QUẢ VÀ ĐÁNH GIÁ
+## 8. KẾT QUẢ VÀ ĐÁNH GIÁ
 
-### 7.1. Kết quả từ Weka
+### 8.1. Kết quả từ Weka
 
-#### 7.1.1. So sánh các thuật toán
+#### 8.1.1. So sánh các thuật toán
 
 | Thuật toán | Accuracy | Kappa | Mean Absolute Error | Root Mean Squared Error |
 |------------|----------|-------|-------------------|------------------------|
@@ -397,7 +694,7 @@ Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 | Decision Tree (J48) | 59.1% | 0.5228 | 0.1264 | 0.3248 |
 | Random Forest | 78.2% | 0.7457 | 0.1483 | 0.2429 |
 
-#### 7.1.2. Độ chính xác theo từng lớp
+#### 8.1.2. Độ chính xác theo từng lớp
 
 **Naïve Bayes - Detailed Accuracy By Class:**
 
@@ -423,7 +720,7 @@ Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 | Sports | 0.804 | 0.039 | 0.777 | 0.804 | 0.790 | 0.961 |
 | Technology | 0.739 | 0.034 | 0.784 | 0.739 | 0.761 | 0.932 |
 
-#### 7.1.3. Phân tích kết quả
+#### 8.1.3. Phân tích kết quả
 
 **Kết quả quan trọng:**
 - **Naïve Bayes đạt hiệu suất tốt nhất** với độ chính xác 80.0% và Kappa = 0.7667
@@ -449,9 +746,9 @@ Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 3. **Không bị overfitting** như Decision Tree với 120 features
 4. **Gaussian distribution** phù hợp với dữ liệu số từ keyword counts
 
-### 7.2. Kết quả từ cài đặt C#
+### 8.2. Kết quả từ cài đặt C#
 
-#### 7.2.1. Hiệu suất
+#### 8.2.1. Hiệu suất
 
 **Training data:** 800 samples (80% của dataset)
 **Test data:** 200 samples (20% của dataset)
@@ -479,7 +776,7 @@ Chương trình sẽ demo phân loại một số mẫu test và hiển thị:
 - Recall: 78.50%
 - F1-Score: 78.51%
 
-#### 7.2.2. Confusion Matrix (C# Implementation)
+#### 8.2.2. Confusion Matrix (C# Implementation)
 
 ```
 Predicted ->   Bus  Edu  Ent  Hea  Pol  Spo  Tech  | Total
@@ -493,7 +790,7 @@ Sports           2    1    2    1    1   21     0   |   28
 Technology       1    1    1    1    1    0    17   |   22
 ```
 
-#### 7.2.3. So sánh C# vs Weka
+#### 8.2.3. So sánh C# vs Weka
 
 | Metric | C# Implementation | Weka Naïve Bayes | Sai lệch |
 |--------|------------------|------------------|----------|
@@ -507,9 +804,9 @@ Technology       1    1    1    1    1    0    17   |   22
 3. **Precision**: Weka có xử lý số thực chính xác hơn
 4. **Feature handling**: Xử lý missing values có thể khác nhau
 
-### 7.3. Phân tích lỗi chi tiết
+### 8.3. Phân tích lỗi chi tiết
 
-#### 7.3.1. Phân tích Confusion Matrix
+#### 8.3.1. Phân tích Confusion Matrix
 
 **Từ kết quả Naïve Bayes (Weka):**
 
@@ -527,7 +824,7 @@ Technology       1    1    1    1    1    0    17   |   22
 3. **Sports ↔ Entertainment**: 8+1=9 lỗi
 4. **Education ↔ Technology**: 7+7=14 lỗi
 
-#### 7.3.2. Nguyên nhân lỗi phân loại
+#### 8.3.2. Nguyên nhân lỗi phân loại
 
 **1. Chồng chéo từ khóa:**
 - Business-Technology: `app`, `dau_tu`, `startup`, `doanh_nghiep`
@@ -544,7 +841,7 @@ Technology       1    1    1    1    1    0    17   |   22
 - Bài về "Thể thao trên truyền hình" → Sports hay Entertainment?
 - Bài về "Giáo dục y khoa" → Education hay Health?
 
-#### 7.3.3. Cải thiện đề xuất
+#### 8.3.3. Cải thiện đề xuất
 
 **1. Feature Engineering:**
 - Thêm bigram features: "cong_nghe + dau_tu", "the_thao + truyen_hinh"
@@ -571,9 +868,9 @@ Technology       1    1    1    1    1    0    17   |   22
 
 ---
 
-## 8. KẾT LUẬN
+## 9. KẾT LUẬN
 
-### 8.1. Tóm tắt kết quả đạt được
+### 9.1. Tóm tắt kết quả đạt được
 
 Đồ án đã thành công thực hiện:
 
@@ -592,7 +889,7 @@ Technology       1    1    1    1    1    0    17   |   22
 - C# implementation đạt 78.5% accuracy (chênh lệch 1.5% với Weka)
 - Phân tích chi tiết lỗi và đưa ra giải pháp cải thiện
 
-### 8.2. Đóng góp khoa học và thực tiễn
+### 9.2. Đóng góp khoa học và thực tiễn
 
 **1. Đóng góp lý thuyết:**
 - Chứng minh hiệu quả của Naïve Bayes trong Vietnamese text classification
@@ -609,7 +906,7 @@ Technology       1    1    1    1    1    0    17   |   22
 - Implementation hiệu quả của Gaussian Naïve Bayes
 - Framework đánh giá model với metrics đầy đủ
 
-### 8.3. Kết quả nổi bật
+### 9.3. Kết quả nổi bật
 
 **Naïve Bayes vượt trội so với dự kiến:**
 - Đạt 80.0% accuracy, cao hơn Random Forest (78.2%) và J48 (59.1%)
@@ -621,29 +918,29 @@ Technology       1    1    1    1    1    0    17   |   22
 - Education: F1-Score = 0.824 (cân bằng tốt)
 - Sports: Precision = 0.847 (chính xác cao)
 
-### 8.4. Hạn chế và thách thức
+### 9.4. Hạn chế và thách thức
 
-#### 8.4.1. Hạn chế về thuật toán
+#### 9.4.1. Hạn chế về thuật toán
 
 - **Feature independence assumption**: Không thực tế với ngôn ngữ tự nhiên
 - **Gaussian assumption**: Không phù hợp hoàn toàn với keyword counts
 - **Zero probability problem**: Cần smoothing techniques
 
-#### 8.4.2. Hạn chế về dữ liệu
+#### 9.4.2. Hạn chế về dữ liệu
 
 - **Dataset size**: 1.000 samples còn nhỏ cho deep learning
 - **Feature representation**: Keyword-based chưa capture semantic
 - **Class overlap**: Một số bài báo có thể thuộc multiple categories
 
-#### 8.4.3. Hạn chế về evaluation
+#### 9.4.3. Hạn chế về evaluation
 
 - **Single dataset**: Cần test trên nhiều Vietnamese news datasets
 - **Cross-validation**: Chỉ 10-fold, có thể cần nested CV
 - **Temporal aspect**: Không consider time evolution của news
 
-### 8.5. Hướng phát triển tương lai
+### 9.5. Hướng phát triển tương lai
 
-#### 8.5.1. Cải thiện thuật toán (Ngắn hạn)
+#### 9.5.1. Cải thiện thuật toán (Ngắn hạn)
 
 **1. Advanced Naïve Bayes:**
 - Multinomial NB cho text data
@@ -660,7 +957,7 @@ Technology       1    1    1    1    1    0    17   |   22
 - NB as feature for deep models
 - Multi-level hierarchical classification
 
-#### 8.5.2. Ứng dụng AI hiện đại (Dài hạn)
+#### 9.5.2. Ứng dụng AI hiện đại (Dài hạn)
 
 **1. Deep Learning approaches:**
 - CNN for text classification
@@ -677,7 +974,7 @@ Technology       1    1    1    1    1    0    17   |   22
 - Incremental learning for new categories
 - Multi-language support (Vietnamese + English)
 
-#### 8.5.3. Dataset expansion
+#### 9.5.3. Dataset expansion
 
 **1. Data collection:**
 - Crawl từ 20+ Vietnamese news websites
@@ -694,30 +991,30 @@ Technology       1    1    1    1    1    0    17   |   22
 - Competition dataset cho research community
 - Evaluation protocols cho Vietnamese NLP
 
-### 8.6. Kinh nghiệm và bài học
+### 9.6. Kinh nghiệm và bài học
 
-#### 8.6.1. Về Machine Learning
+#### 9.6.1. Về Machine Learning
 
 1. **"Simple is often better"**: Naïve Bayes đánh bại các thuật toán phức tạp hơn
 2. **Feature engineering matters more than algorithms**: Keyword selection ảnh hưởng lớn
 3. **Domain knowledge crucial**: Hiểu Vietnamese news structure giúp feature design
 4. **Evaluation methodology**: Cross-validation và multiple metrics cần thiết
 
-#### 8.6.2. Về Implementation
+#### 9.6.2. Về Implementation
 
 1. **From scratch vs libraries**: Code từ đầu giúp hiểu sâu thuật toán
 2. **Data preprocessing critical**: 90% effort trong data cleaning và preparation
 3. **Performance vs accuracy tradeoff**: Naïve Bayes nhanh và đủ accurate
 4. **Reproducibility**: Random seed và data split strategy quan trọng
 
-#### 8.6.3. Về Vietnamese NLP
+#### 9.6.3. Về Vietnamese NLP
 
 1. **Resource limitations**: Ít tools và datasets cho tiếng Việt
 2. **Cultural context**: News categories reflect Vietnamese media landscape
 3. **Language challenges**: Compound words và context sensitivity
 4. **Opportunity**: Huge potential cho Vietnamese AI applications
 
-### 8.7. Kết luận tổng thể
+### 9.7. Kết luận tổng thể
 
 Đồ án đã thành công chứng minh rằng **thuật toán Naïve Bayes vẫn là lựa chọn hiệu quả** cho bài toán phân loại tin tức tiếng Việt, đạt được **80% accuracy** và vượt trội về tốc độ xử lý. Kết quả này mở ra hướng nghiên cứu mới cho Vietnamese text classification và cung cấp baseline mạnh cho các nghiên cứu tiếp theo.
 
@@ -725,7 +1022,7 @@ Với sự phát triển mạnh mẽ của AI và NLP, việc xây dựng các h
 
 ---
 
-## 9. TÀI LIỆU THAM KHẢO
+## 10. TÀI LIỆU THAM KHẢO
 
 1. Manning, C. D., Raghavan, P., & Schütze, H. (2008). *Introduction to Information Retrieval*. Cambridge University Press.
 
@@ -759,9 +1056,9 @@ Với sự phát triển mạnh mẽ của AI và NLP, việc xây dựng các h
 
 ---
 
-## 9. KHẮC PHỤC LỖI VÀ CẢI TIẾN HỆ THỐNG
+## 11. KHẮC PHỤC LỖI VÀ CẢI TIẾN HỆ THỐNG
 
-### 9.1. Phát hiện và khắc phục lỗi nghiêm trọng
+### 11.1. Phát hiện và khắc phục lỗi nghiêm trọng
 
 **Vấn đề phát hiện**: Trong quá trình testing, phát hiện hệ thống phân loại sai các bài báo về quân sự/quốc phòng thành danh mục "Sports" với 100% confidence.
 
@@ -774,7 +1071,7 @@ Với sự phát triển mạnh mẽ của AI và NLP, việc xây dựng các h
 
 3. **Tối ưu thuật toán**: Cải thiện keyword matching và confidence calculation
 
-### 9.2. Kết quả sau khi khắc phục
+### 11.2. Kết quả sau khi khắc phục
 
 **Test case bài báo quân sự**:
 ```
@@ -796,14 +1093,14 @@ cho biết hệ thống radar đã phát hiện mục tiêu từ xa..."
 - Politics: 80.7% accuracy ✅
 - Military articles: 100% → Politics ✅
 
-### 9.3. Cải tiến web interface
+### 11.3. Cải tiến web interface
 
 1. **Real-time classification**: Hỗ trợ phân loại trực tiếp qua web interface
 2. **Detailed logging**: Debug information cho development environment
 3. **Production optimization**: Proper error handling và fallback mechanisms
 4. **Bootstrap UI**: Giao diện thân thiện với responsive design
 
-### 9.4. Performance metrics sau cải tiến
+### 11.4. Performance metrics sau cải tiến
 
 - **Model accuracy**: 78.5% (C# implementation)
 - **Training time**: 57ms cho 1000 samples
@@ -811,7 +1108,7 @@ cho biết hệ thống radar đã phát hiện mục tiêu từ xa..."
 - **Memory usage**: ~15MB during execution
 - **Web response time**: <100ms per request
 
-### 9.5. Validation và testing
+### 11.5. Validation và testing
 
 Đã thực hiện comprehensive testing với:
 - 8 test cases covering tất cả categories
